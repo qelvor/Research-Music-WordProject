@@ -15,16 +15,17 @@
 - 🛠️ 多样歌词组合：灵活组合原文、译文、罗马音的歌词内容。
 - 🔧 加密歌词支持：支持解析 QQ音乐(QRC)、酷狗音乐(KRC)、网易云音乐(YRC) 等加密歌词格式。
 - 📱 自适应UI：根据系统主题自动调整界面颜色。
-- ⌚ 圆屏手表适配：针对 Wear OS 等圆屏设备进行了专门的 UI 适配（底部导航靠拢、标题居中），避免边缘裁切。
+- ⌚ 极致圆屏手表适配：针对 Wear OS 等圆屏设备进行了专门的 UI 适配（底部悬浮无黑边胶囊导航、标题居中、无操作3秒自动隐藏底栏、上滑恢复导航），完美避免边缘裁切。
+- 🕒 增强的搜索体验：搜索历史记录支持上下滑动查看，且支持单条快速删除（点击 Chip 上的叉号）。
 
 ## 版本信息
 
 | 项目            | 值                      |
 |---------------|------------------------|
-| 版本号           | 1.0.3 (versionCode: 4) |
+| 版本号           | 1.0.4 (versionCode: 5) |
 | 最低 Android 版本 | Android 7.0 (API 24)   |
 | 目标 Android 版本 | Android 15 (API 36)    |
-| 发布日期          | 2026-10-25             |
+| 发布日期          | 2026-10-31             |
 
 ## 技术栈
 
@@ -44,58 +45,31 @@
 ```
 app/src/main/java/com/example/lddc/
 ├── LDDCApplication.kt          # 应用入口
-├── MainActivity.kt              # 主Activity（包含圆屏底栏适配）
+├── MainActivity.kt              # 主Activity（包含全局触摸监听、圆屏悬浮底栏及隐藏逻辑）
 ├── common/                      # 通用模块
 │   ├── models/                  # 数据模型
 │   │   ├── enums/               # 枚举类
-│   │   │   ├── Language.kt      # 语言
-│   │   │   ├── LyricsFormat.kt  # 歌词格式
-│   │   │   ├── LyricsType.kt    # 歌词类型
-│   │   │   ├── SearchType.kt    # 搜索类型
-│   │   │   └── Source.kt        # 音乐平台
 │   │   ├── info/                # 信息模型
-│   │   │   ├── AlbumInfo.kt     # 专辑信息
-│   │   │   ├── Artist.kt        # 艺术家信息
-│   │   │   ├── LyricInfo.kt     # 歌词信息
-│   │   │   ├── PlaylistInfo.kt  # 播放列表信息
-│   │   │   └── SongInfo.kt      # 歌曲信息
 │   │   └── lyrics/              # 歌词模型
-│   │       ├── Lyrics.kt        # 歌词数据
-│   │       ├── LyricsLine.kt    # 歌词行
-│   │       └── LyricsWord.kt    # 歌词字
 │   └── utils/                   # 工具类
-│       ├── AlbumArtLoader.kt    # 专辑封面加载
-│       ├── PermissionUtils.kt   # 权限工具
-│       └── TextUtils.kt         # 文本工具
 ├── core/                        # 核心功能
 │   ├── api/                     # API实现
-│   │   ├── base/                # 基础API
-│   │   ├── impl/                # 具体实现
-│   │   │   ├── KugouApi.kt      # 酷狗音乐API
-│   │   │   ├── NetEaseApi.kt    # 网易云音乐API
-│   │   │   └── QQMusicApi.kt    # QQ音乐API
-│   │   ├── LyricsApiManager.kt  # API管理器
-│   │   └── NetEaseDeviceIds.kt  # 网易云设备ID
 │   ├── decryptor/               # 解密器
-│   │   ├── EapiDecryptor.kt     # EAPI解密
-│   │   ├── KrcDecryptor.kt      # KRC解密
-│   │   └── QrcDecryptor.kt      # QRC解密
 │   ├── parser/                  # 解析器
-│   │   └── ...
-│   └── utils/                   # 核心工具类（新增）
+│   └── utils/                   # 核心工具类
 │       ├── DownloadLocation.kt  # SAF 目录权限与路径管理
 │       └── LyricsSaver.kt       # 歌词文件保存引擎（支持默认/SAF）
 ├── data/                        # 数据层
 │   ├── local/                   # 本地数据
 │   │   ├── database/            # 数据库
 │   │   └── datastore/           # 数据存储
-│   │       └── SettingsDataStore.kt # 设置数据存储（已适配自定义下载路径）
+│   │       └── SettingsDataStore.kt # 设置数据存储（含自动隐藏底栏、自定义路径）
 │   └── repository/              # 仓库
-│       └── ...
 ├── di/                          # 依赖注入
-│   └── AppModule.kt             # 应用模块
 ├── domain/                      # 领域层
-│   └── ...
+│   ├── convert/                 # 歌词转换
+│   ├── search/                  # 搜索逻辑（新增 DeleteSearchHistoryUseCase）
+│   └── settings/                # 设置逻辑
 ├── presentation/                # 表现层
 │   ├── components/              # 组件
 │   │   └── designsystem/        # 设计系统
@@ -103,10 +77,10 @@ app/src/main/java/com/example/lddc/
 │       ├── search/              # 搜索页面
 │       │   ├── LyricsDetailScreen.kt    # 歌词详情（支持下载与复制提示）
 │       │   ├── LyricsDetailViewModel.kt # 歌词详情VM（支持自动保存）
-│       │   ├── SearchScreen.kt          # 搜索页面（支持圆屏标题居中）
+│       │   ├── SearchScreen.kt          # 搜索页面（支持圆屏标题居中、历史记录滑动与删除）
 │       │   └── SearchViewModel.kt       # 搜索VM
 │       └── settings/            # 设置页面
-│           ├── SettingsScreen.kt        # 设置（新增下载目录选择）
+│           ├── SettingsScreen.kt        # 设置（包含下载目录选择、底栏隐藏开关）
 │           └── SettingsViewModel.kt     # 设置VM
 ```
 
@@ -127,14 +101,19 @@ app/src/main/java/com/example/lddc/
 
 ## 更新日志
 
+### v1.0.4 (2026-10-31)
+- ⌚ 圆屏底栏重大重构：彻底去除底部黑边，改为紧凑的悬浮胶囊样式。
+- ⌚ 新增底栏 3 秒无操作自动隐藏功能，并支持上滑屏幕恢复导航（可在设置页选择开启/关闭）。
+- 🕒 搜索历史记录区域加入上下滑动支持，解决圆屏设备上历史记录过多被遮挡的问题。
+- 🕒 搜索历史记录 Chip 新增单条删除按钮（点击右侧叉号快速删除）。
+- ✨ 细节优化：放大底栏触发热区，复制歌词提示自动适配 Android 13 以下系统。
+- 🔧 修复部分 Context 注入及跨页面状态同步问题。
+
 ### v1.0.3 (2026-10-25)
 - ✨ 添加一键下载歌词文件功能（支持 LRC、SRT、ASS 等格式）。
 - ✨ 新增“自定义下载目录”功能，利用 SAF 选择任意文件夹，无需存储权限。
 - ✨ 设置页新增“自动保存”开关，进入详情页加载歌词后自动静默保存。
-- ✨ 复制歌词成功后增加 Toast 提示（适配 Android 13 以下系统）。
-- ⌚ 添加圆屏设备（手表）UI 适配：优化底部导航栏，搜索页标题居中。
 - 🎨 优化详情页操作区，加入“下载”与“复制”按钮。
-- 🔧 更新底层依赖与组件结构。
 
 ### v1.0.2 (2026-03-12)
 - ✨ 添加翻译和罗马歌词的适配
